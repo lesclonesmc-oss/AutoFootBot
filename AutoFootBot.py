@@ -2,8 +2,6 @@ import discord
 import asyncio
 import re
 from datetime import datetime, timezone
-from flask import Flask
-from threading import Thread
 
 TOKEN = "MTQ3ODg4OTY2Njk0OTI4Nzk1MA.Gzsb9z.fIPSagnV00ri7VmC41gk6yACy_X0L4gbTeBA38"
 
@@ -19,16 +17,6 @@ CHANNEL_IDS = [
     1475246253393838160,
 ]
 
-# ── Flask ──
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot en ligne !"
-
-Thread(target=lambda: app.run(host='0.0.0.0', port=8080), daemon=True).start()
-
-# ── Bot ──
 scheduled_tasks = {}
 
 class MyClient(discord.Client):
@@ -40,7 +28,6 @@ class MyClient(discord.Client):
         if message.channel.id not in CHANNEL_IDS:
             return
 
-        # ── Football Nation "Match ended" → /live-upcoming ──
         if str(message.author.id) == BOT_MATCH_ENDED_ID:
             for embed in message.embeds:
                 for field in embed.fields:
@@ -50,7 +37,6 @@ class MyClient(discord.Client):
                         print(f"[{message.channel.name}] /live-upcoming envoyé")
                         return
 
-        # ── Autre bot → /predict 40 min avant ──
         if str(message.author.id) == BOT_UPCOMING_ID:
             if not message.embeds:
                 return
@@ -65,7 +51,6 @@ class MyClient(discord.Client):
                         continue
 
                     now = datetime.now(timezone.utc).timestamp()
-
                     future_matches = [
                         (name, int(ts))
                         for name, ts in matches
@@ -78,7 +63,6 @@ class MyClient(discord.Client):
 
                     future_matches.sort(key=lambda x: x[1])
                     match_name, match_ts = future_matches[0]
-
                     match_formatted = match_name.replace(" - ", " vs ")
                     delay = match_ts - now - (40 * 60)
 
@@ -86,7 +70,6 @@ class MyClient(discord.Client):
                     print(f"[{message.channel.name}] Prochain match : {match_formatted} à {match_dt.strftime('%d/%m %H:%M')} UTC")
 
                     if delay <= 0:
-                        print(f"[{message.channel.name}] Moins de 40 min, envoi immédiat !")
                         await self._send_predict(message.channel, match_formatted)
                     else:
                         print(f"[{message.channel.name}] /predict dans {delay/60:.1f} min")
