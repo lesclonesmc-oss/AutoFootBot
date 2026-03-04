@@ -1,9 +1,10 @@
 import discord
 import asyncio
 import re
+import os
 from datetime import datetime, timezone
 
-TOKEN = "MTQ3ODg4OTY2Njk0OTI4Nzk1MA.Gzsb9z.fIPSagnV00ri7VmC41gk6yACy_X0L4gbTeBA38"
+TOKEN = os.environ.get("TOKEN")
 
 BOT_MATCH_ENDED_ID = "809853895450427403"
 BOT_UPCOMING_ID = "668075833780469772"
@@ -97,3 +98,4 @@ class MyClient(discord.Client):
 
 client = MyClient()
 client.run(TOKEN)
+
