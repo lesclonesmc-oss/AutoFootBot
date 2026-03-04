@@ -1,4 +1,4 @@
-import discord.py-self
+import discord
 import asyncio
 import re
 from datetime import datetime, timezone
@@ -118,3 +118,4 @@ async def send_predict(channel, match_name: str):
     print(f"[{channel.name}] /predict match:{match_name} envoyé")
 
 client.run(TOKEN)
+
