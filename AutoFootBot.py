@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timezone
 
 TOKEN = os.environ.get("TOKEN")
+print(f"Token lu : '{TOKEN}'")
 
 BOT_MATCH_ENDED_ID = "809853895450427403"
 BOT_UPCOMING_ID = "668075833780469772"
@@ -98,4 +99,5 @@ class MyClient(discord.Client):
 
 client = MyClient()
 client.run(TOKEN)
+
 
