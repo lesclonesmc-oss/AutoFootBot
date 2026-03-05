@@ -1,4 +1,4 @@
-import discord
+import discorf
 import asyncio
 import re
 import os
@@ -9,8 +9,8 @@ from threading import Thread
 TOKEN = os.environ.get("TOKEN")
 print(f"Token lu : '{TOKEN}'")
 
-FOOTBALL_NATION_ID = "809853895450427403"
-FOOTBALL_NATION_WEBHOOK_ID = "1476014023593164840"
+FOOTBALL_NATION_WEBHOOK_ID = "1476014023593164840"  # Webhook → Match ended
+FOOTBALL_NATION_ID = "809853895450427403"           # Vrai bot → prochains matchs
 
 CHANNEL_IDS = [
     1475202086172889140,
@@ -41,22 +41,23 @@ class MyClient(discord.Client):
         if message.channel.id not in CHANNEL_IDS:
             return
 
-        # ── Webhook OU Football Nation → Match ended ──
-        if str(message.author.id) in [FOOTBALL_NATION_ID, FOOTBALL_NATION_WEBHOOK_ID]:
-            if not message.embeds:
-                return
+        if not message.embeds:
+            return
 
+        # ── Webhook → détecte "Match ended" → envoie /live-upcoming ──
+        if str(message.author.id) == FOOTBALL_NATION_WEBHOOK_ID:
             for embed in message.embeds:
                 for field in embed.fields:
-
-                    # Match ended → envoie /live-upcoming
                     if "Match ended" in field.name:
                         print(f"[{message.channel.name}] Match ended détecté !")
                         await message.channel.send("/live-upcoming")
                         print(f"[{message.channel.name}] /live-upcoming envoyé")
                         return
 
-                    # Réponse /live-upcoming → planifie /predict
+        # ── Football Nation → lit les prochains matchs → planifie /predict ──
+        if str(message.author.id) == FOOTBALL_NATION_ID:
+            for embed in message.embeds:
+                for field in embed.fields:
                     matches = re.findall(
                         r'[\w\s]+:\s*\[([^\]]+)\]\([^\)]+\) start time: <t:(\d+):[^>]+>',
                         field.value
