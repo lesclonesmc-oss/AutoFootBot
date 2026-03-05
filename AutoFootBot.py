@@ -1,4 +1,4 @@
-import discorf
+import discord
 import asyncio
 import re
 import os
@@ -112,3 +112,4 @@ class MyClient(discord.Client):
 
 client = MyClient()
 client.run(TOKEN)
+
