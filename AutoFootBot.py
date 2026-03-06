@@ -41,6 +41,9 @@ class MyClient(discord.Client):
         if message.channel.id not in CHANNEL_IDS:
             return
 
+        # Debug temporaire
+        print(f"Message reçu - Auteur: {message.author.id} | Salon: {message.channel.id} | Embeds: {len(message.embeds)}")
+
         if not message.embeds:
             return
 
@@ -112,4 +115,3 @@ class MyClient(discord.Client):
 
 client = MyClient()
 client.run(TOKEN)
-
