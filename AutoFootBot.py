@@ -9,8 +9,7 @@ from threading import Thread
 TOKEN = os.environ.get("TOKEN")
 print(f"Token lu : '{TOKEN}'")
 
-FOOTBALL_NATION_WEBHOOK_ID = "1476014023593164840"  # Webhook → Match ended
-FOOTBALL_NATION_ID = "809853895450427403"           # Vrai bot → prochains matchs
+FOOTBALL_NATION_ID = "809853895450427403"  # Vrai bot → prochains matchs
 
 CHANNEL_IDS = [
     1475202086172889140,
@@ -47,15 +46,14 @@ class MyClient(discord.Client):
         if not message.embeds:
             return
 
-        # ── Webhook → détecte "Match ended" → envoie /live-upcoming ──
-        if str(message.author.id) == FOOTBALL_NATION_WEBHOOK_ID:
-            for embed in message.embeds:
-                for field in embed.fields:
-                    if "Match ended" in field.name:
-                        print(f"[{message.channel.name}] Match ended détecté !")
-                        await message.channel.send("/live-upcoming")
-                        print(f"[{message.channel.name}] /live-upcoming envoyé")
-                        return
+        # ── N'importe quel webhook → détecte "Match ended" → envoie /live-upcoming ──
+        for embed in message.embeds:
+            for field in embed.fields:
+                if "Match ended" in field.name:
+                    print(f"[{message.channel.name}] Match ended détecté ! (auteur: {message.author.id})")
+                    await message.channel.send("/live-upcoming")
+                    print(f"[{message.channel.name}] /live-upcoming envoyé")
+                    return
 
         # ── Football Nation → lit les prochains matchs → planifie /predict ──
         if str(message.author.id) == FOOTBALL_NATION_ID:
