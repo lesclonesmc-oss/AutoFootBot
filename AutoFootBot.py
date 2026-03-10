@@ -9,7 +9,11 @@ from threading import Thread
 TOKEN = os.environ.get("TOKEN")
 print(f"Token lu : '{TOKEN}'")
 
-FOOTBALL_NATION_ID = "809853895450427403"  # Vrai bot → prochains matchs
+FOOTBALL_NATION_ID = "809853895450427403"
+LIVE_UPCOMING_APP_ID = "809853895450427403"
+LIVE_UPCOMING_CMD_ID = "957414214304141412"
+PREDICT_APP_ID = "668075833780469772"
+PREDICT_CMD_ID = "1014500288306090102"
 
 CHANNEL_IDS = [
     1475202086172889140,
@@ -36,11 +40,27 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f"Connecté en tant que {self.user}")
 
+    async def send_interaction(self, channel, application_id, command_id, command_name, options=None):
+        payload = {
+            "type": 2,
+            "application_id": application_id,
+            "channel_id": str(channel.id),
+            "guild_id": str(channel.guild.id),
+            "data": {
+                "id": command_id,
+                "name": command_name,
+                "type": 1,
+            }
+        }
+        if options:
+            payload["data"]["options"] = options
+
+        await self.http.request("POST", "/interactions", json=payload)
+
     async def on_message(self, message):
         if message.channel.id not in CHANNEL_IDS:
             return
 
-        # Debug temporaire
         print(f"Message reçu - Auteur: {message.author.id} | Salon: {message.channel.id} | Embeds: {len(message.embeds)}")
 
         if not message.embeds:
@@ -51,7 +71,12 @@ class MyClient(discord.Client):
             for field in embed.fields:
                 if "Match ended" in field.name:
                     print(f"[{message.channel.name}] Match ended détecté ! (auteur: {message.author.id})")
-                    await message.channel.send("/live-upcoming")
+                    await self.send_interaction(
+                        message.channel,
+                        LIVE_UPCOMING_APP_ID,
+                        LIVE_UPCOMING_CMD_ID,
+                        "live-upcoming"
+                    )
                     print(f"[{message.channel.name}] /live-upcoming envoyé")
                     return
 
@@ -108,7 +133,13 @@ class MyClient(discord.Client):
             print(f"[{channel.name}] Tâche annulée")
 
     async def _send_predict(self, channel, match_name: str):
-        await channel.send(f"/predict match:{match_name}")
+        await self.send_interaction(
+            channel,
+            PREDICT_APP_ID,
+            PREDICT_CMD_ID,
+            "predict",
+            options=[{"type": 3, "name": "match", "value": match_name}]
+        )
         print(f"[{channel.name}] /predict match:{match_name} envoyé")
 
 client = MyClient()
