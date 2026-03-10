@@ -55,7 +55,8 @@ class MyClient(discord.Client):
         if options:
             payload["data"]["options"] = options
 
-        await self.http.request("POST", "/interactions", json=payload)
+        route = discord.http.Route("POST", "/interactions")
+        await self.http.request(route, json=payload)
 
     async def on_message(self, message):
         if message.channel.id not in CHANNEL_IDS:
