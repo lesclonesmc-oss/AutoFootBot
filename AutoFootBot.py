@@ -50,7 +50,8 @@ class MyClient(discord.Client):
                 "id": command_id,
                 "name": command_name,
                 "type": 1,
-            }
+            },
+            "version": 1
         }
         if options:
             payload["data"]["options"] = options
