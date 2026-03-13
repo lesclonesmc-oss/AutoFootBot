@@ -2,6 +2,7 @@ import discord
 import asyncio
 import re
 import os
+import time
 from datetime import datetime, timezone
 from flask import Flask
 from threading import Thread
@@ -12,8 +13,10 @@ print(f"Token lu : '{TOKEN}'")
 FOOTBALL_NATION_ID = "809853895450427403"
 LIVE_UPCOMING_APP_ID = "809853895450427403"
 LIVE_UPCOMING_CMD_ID = "957414214304141412"
+LIVE_UPCOMING_CMD_VERSION = "957414214304141413"
 PREDICT_APP_ID = "668075833780469772"
 PREDICT_CMD_ID = "1014500288306090102"
+PREDICT_CMD_VERSION = "1033086301513191490"
 
 CHANNEL_IDS = [
     1475202086172889140,
@@ -40,21 +43,25 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f"Connecté en tant que {self.user}")
 
-    async def send_interaction(self, channel, application_id, command_id, command_name, options=None):
+    async def send_interaction(self, channel, application_id, command_id, command_version, command_name, options=None):
+        nonce = str(int(time.time() * 1000) << 22)
         payload = {
             "type": 2,
             "application_id": application_id,
-            "channel_id": str(channel.id),
             "guild_id": str(channel.guild.id),
+            "channel_id": str(channel.id),
+            "session_id": self.ws.session_id,
+            "nonce": nonce,
+            "analytics_location": "slash_ui",
             "data": {
                 "id": command_id,
+                "version": command_version,
                 "name": command_name,
                 "type": 1,
-                "version": command_id
+                "options": options or [],
+                "attachments": []
             }
         }
-        if options:
-            payload["data"]["options"] = options
 
         route = discord.http.Route("POST", "/interactions")
         await self.http.request(route, json=payload)
@@ -77,6 +84,7 @@ class MyClient(discord.Client):
                         message.channel,
                         LIVE_UPCOMING_APP_ID,
                         LIVE_UPCOMING_CMD_ID,
+                        LIVE_UPCOMING_CMD_VERSION,
                         "live-upcoming"
                     )
                     print(f"[{message.channel.name}] /live-upcoming envoyé")
@@ -139,6 +147,7 @@ class MyClient(discord.Client):
             channel,
             PREDICT_APP_ID,
             PREDICT_CMD_ID,
+            PREDICT_CMD_VERSION,
             "predict",
             options=[{"type": 3, "name": "match", "value": match_name}]
         )
